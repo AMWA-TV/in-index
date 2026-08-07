@@ -1,0 +1,7 @@
+*#
+*.swp
+*~
+.DS_Store
+
+# Local dry-run cache dir (see MINT_TMP_ROOT in mint-in-repo.sh).
+.cache/

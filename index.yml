@@ -1,0 +1,24 @@
+# Authoritative index of AMWA Increment (IN) documents.
+#
+# This file is updated automatically by .github/workflows/mint-in-repo.yml
+# when a new proposal is merged. Manual edits are allowed for status
+# changes (e.g. marking a document withdrawn) but 'last_assigned' should
+# never be decreased and existing entries should never be removed.
+
+# The highest number ever assigned. Never decrease.
+last_assigned: 2
+
+documents:
+  - number: 1
+    repo: AMWA-TV/in-001
+    title: "API Requirements – Control of MXL v1.0"
+    status: active
+    minted_at: "2025-01-01T00:00:00Z"  # pre-automation seed entry
+    initial_maintainers: []
+
+  - number: 2
+    repo: AMWA-TV/in-002
+    title: "Time and Identity in the Dynamic Media Facility"
+    status: active
+    minted_at: "2025-01-01T00:00:00Z"  # pre-automation seed entry
+    initial_maintainers: []

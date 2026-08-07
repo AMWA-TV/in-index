@@ -1,0 +1,68 @@
+name: Validate proposal
+
+on:
+  pull_request:
+    paths:
+      - 'proposals/**'
+      - 'schemas/**'
+      - '.github/scripts/validate-proposal.sh'
+      - '.github/workflows/validate-proposal.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install validators
+        run: |
+          python -m pip install --upgrade pip
+          pip install check-jsonschema pyyaml
+
+      - name: Determine which proposal files this PR adds/modifies
+        id: files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # List added/modified proposal YAMLs vs. the PR base.
+          # Deleted files are ignored.
+          mapfile -t files < <(git --no-pager diff --name-only --diff-filter=AM "${BASE_SHA}" "${HEAD_SHA}" -- 'proposals/*.yml' 'proposals/*.yaml' || true)
+          printf 'Changed proposal files:\n'
+          printf '  %s\n' "${files[@]}"
+          {
+            echo 'files<<EOF'
+            printf '%s\n' "${files[@]}"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Validate schema and predict next number
+        id: validate
+        env:
+          FILES: ${{ steps.files.outputs.files }}
+        run: ./.github/scripts/validate-proposal.sh
+
+      - name: Comment on PR with predicted number(s)
+        if: steps.validate.outputs.summary != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const summary = `${{ steps.validate.outputs.summary }}`;
+            if (!summary.trim()) return;
+            const marker = '<!-- in-index:mint-preview -->';
+            const body = `${marker}\n${summary}`;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number });
+            const existing = comments.find(c => c.body && c.body.startsWith(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
