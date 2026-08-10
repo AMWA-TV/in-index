@@ -10,7 +10,7 @@
 3. Fill in the file using the schema below.
 4. Open a Pull Request. CI will validate the schema and post a comment
    saying which `in-NNN` number the proposal will be assigned on merge.
-5. Two members of `@AMWA-TV/nmos-architecture-review` must approve.
+5. Two members of `@AMWA-TV/jt-dmf-in-admin` must approve.
 6. On merge, the mint workflow runs on `main` and creates the new repo.
 
 ## Proposal schema
