@@ -1,0 +1,57 @@
+# Configuration read by Zensical (which understands mkdocs.yml).
+# See https://zensical.org/compatibility/configuration/.
+
+site_name: AMWA Increment Documents
+site_description: >-
+  Index of AMWA Increment (IN) documents — snapshots of ongoing AMWA
+  activity phases that may be referenced by NMOS or other specifications.
+site_url: https://specs.amwa.tv/new/in-index/
+
+repo_name: AMWA-TV/in-index
+repo_url: https://github.com/AMWA-TV/in-index
+edit_uri: edit/main/
+
+# .docs/build_index.py writes markdown into `build/docs/` so we never
+# clobber hand-authored files under `docs/` (repo-internal setup notes).
+# Zensical writes the built site into `site/`.
+docs_dir: build/docs
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.top
+    - content.action.edit
+    - search.suggest
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md

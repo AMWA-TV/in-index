@@ -1,0 +1,100 @@
+name: Docs
+
+# Renders the AMWA IN document index using Zensical.
+# Modelled on ../nmos/.github/workflows/docs.yml.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - "publish-*"
+    # The mint workflow updates index.yml + README.md on main; rebuild the
+    # site whenever any of the inputs to build_index.py change.
+    paths:
+      - "index.yml"
+      - "mkdocs.yml"
+      - ".docs/**"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "index.yml"
+      - "mkdocs.yml"
+      - ".docs/**"
+      - ".github/workflows/docs.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build with Zensical
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: .docs/requirements.txt
+
+      - name: Install Zensical
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r .docs/requirements.txt
+
+      - name: Generate index page
+        run: python .docs/build_index.py
+
+      - name: Build site
+        run: zensical build --strict
+
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: site
+          path: site/
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download site artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: site
+          path: site
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Publish to specs.amwa.tv
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          # Staging path so we don't collide with anything at the top of
+          # specs.amwa.tv. Drop the /new/ prefix when going live.
+          REMOTE_PATH: "/var/www/specs.amwa.tv/new/in-index"
+        run: |
+          rsync -az --delete \
+            -e 'ssh -o StrictHostKeyChecking=yes' \
+            site/ "${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}/"

@@ -5,3 +5,14 @@
 
 # Local dry-run cache dir (see MINT_TMP_ROOT in mint-in-repo.sh).
 .cache/
+
+# Zensical / MkDocs build output (see .github/workflows/docs.yml).
+/build/
+/site/
+.zensical/
+
+# Local Python virtualenvs used to run .docs/build_index.py
+.venv/
+venv/
+__pycache__/
+*.pyc
