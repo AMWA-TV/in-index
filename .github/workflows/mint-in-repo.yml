@@ -37,9 +37,9 @@ jobs:
 
       - name: Get GitHub App token
         id: app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ secrets.MINTER_APP_ID }}
+          client-id: ${{ secrets.MINTER_APP_CLIENT_ID }}
           private-key: ${{ secrets.MINTER_APP_PRIVATE_KEY }}
           owner: AMWA-TV
 
