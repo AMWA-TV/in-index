@@ -2,11 +2,14 @@ name: Validate proposal
 
 on:
   pull_request:
+    # `edited` triggers on PR title/body edits so checklist ticks re-run the check.
+    types: [opened, synchronize, reopened, edited, ready_for_review]
     paths:
       - 'proposals/**'
       - 'schemas/**'
       - '.github/scripts/validate-proposal.sh'
       - '.github/workflows/validate-proposal.yml'
+      - '.github/pull_request_template.md'
 
 permissions:
   contents: read
@@ -14,6 +17,7 @@ permissions:
 
 jobs:
   validate:
+    name: Validate proposal YAML
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -42,6 +46,22 @@ jobs:
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
 
+      - name: Enforce exactly one added proposal file
+        env:
+          FILES: ${{ steps.files.outputs.files }}
+        run: |
+          # Count non-empty entries.
+          count=$(printf '%s\n' "${FILES}" | grep -c . || true)
+          if [[ "${count}" -eq 0 ]]; then
+            echo "::error::No proposal file added under proposals/*.yml. Add exactly one."
+            exit 1
+          fi
+          if [[ "${count}" -gt 1 ]]; then
+            echo "::error::This PR adds/modifies ${count} proposal files. Exactly one is required per PR."
+            printf '%s\n' "${FILES}"
+            exit 1
+          fi
+
       - name: Validate schema and predict next number
         id: validate
         env:
@@ -65,4 +85,81 @@ jobs:
               await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
             } else {
               await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+  pr-body:
+    name: Validate PR body & checklist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check PR body against template
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const body = context.payload.pull_request.body || "";
+            const errors = [];
+
+            // Extract section content for a given heading (up to the next
+            // `## ` heading or end of body).
+            const section = (heading) => {
+              const lines = body.split(/\r?\n/);
+              const start = lines.findIndex(
+                (l) => l.trim().match(new RegExp(`^##\\s+${heading}\\s*$`)),
+              );
+              if (start === -1) return null;
+              let end = lines.length;
+              for (let i = start + 1; i < lines.length; i++) {
+                if (/^##\s+\S/.test(lines[i])) {
+                  end = i;
+                  break;
+                }
+              }
+              return lines.slice(start + 1, end).join("\n");
+            };
+
+            // Strip HTML comments and whitespace, and check for any of the
+            // template's `_Replace this ..._` placeholder lines.
+            const isEmpty = (s) => {
+              if (s === null) return true;
+              const stripped = s
+                .replace(/<!--[\s\S]*?-->/g, "")
+                .replace(/^\s*[-*]\s*$/gm, "")
+                .trim();
+              if (stripped === "") return true;
+              // Any line still matching the template placeholder pattern.
+              if (/^_replace this [^_]*_\s*$/im.test(stripped)) return true;
+              return false;
+            };
+
+            for (const h of ["Document title", "Slug", "Short description", "Purpose"]) {
+              if (isEmpty(section(h))) {
+                errors.push(`Section \`## ${h}\` is missing or still contains the template placeholder.`);
+              }
+            }
+
+            // Checklist enforcement: every `- [ ]` under the checklist section must be `- [x]`.
+            const checklist = section("Pre-merge checklist");
+            if (checklist === null) {
+              errors.push("Section `## Pre-merge checklist` is missing.");
+            } else {
+              const unchecked = (checklist.match(/^\s*- \[ \]/gm) || []).length;
+              const checked   = (checklist.match(/^\s*- \[[xX]\]/gm) || []).length;
+              if (unchecked > 0) {
+                errors.push(
+                  `Pre-merge checklist has ${unchecked} unticked item(s) ` +
+                  `(and ${checked} ticked). All must be ticked before merge.`,
+                );
+              }
+            }
+
+            if (errors.length) {
+              core.summary
+                .addHeading("PR body checks failed")
+                .addList(errors)
+                .write();
+              for (const e of errors) core.error(e);
+              core.setFailed(`${errors.length} PR body check(s) failed.`);
+            } else {
+              core.info("PR body checks passed.");
             }
