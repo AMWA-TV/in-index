@@ -50,7 +50,7 @@ jobs:
 
       - name: Comment on PR with predicted number(s)
         if: steps.validate.outputs.summary != ''
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const summary = `${{ steps.validate.outputs.summary }}`;
