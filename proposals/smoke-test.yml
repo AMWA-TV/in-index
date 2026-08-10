@@ -1,0 +1,4 @@
+title: "Smoke test proposal (do not merge)"
+short_description: "Verifies the mint pipeline end-to-end in dry-run mode."
+initial_maintainers:
+    - peterbrightwell
