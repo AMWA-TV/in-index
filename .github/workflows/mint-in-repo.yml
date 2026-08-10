@@ -27,8 +27,9 @@ permissions:
 jobs:
   mint:
     runs-on: ubuntu-latest
-    # Skip our own follow-up commit to avoid a self-triggered no-op run.
-    if: ${{ !startsWith(github.event.head_commit.message, 'chore: record newly-minted') }}
+    # On push, skip our own follow-up commit to avoid a self-triggered no-op
+    # run. head_commit only exists for push events, so guard on event_name.
+    if: "${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore: record newly-minted') }}"
     steps:
       - uses: actions/checkout@v5
         with:
