@@ -2,14 +2,25 @@
 
 ## Proposing a new IN document
 
+There are two ways to propose a new IN document. Both end up in the same
+place: a PR that adds `proposals/<slug>.yml` and is gated by
+[`CODEOWNERS`](.github/CODEOWNERS) + branch protection.
+
+### Option A: form-driven (recommended)
+
+1. Go to **Issues → New Issue → “Propose new IN document”** and fill in the form.
+2. A bot will open a PR containing the generated `proposals/<slug>.yml`, and close your issue with a link to the PR.
+3. Continue on the PR: tick the remaining checklist items and request review.
+
+### Option B: hand-authored
+
 1. Fork this repository.
-2. Add a single YAML file under `proposals/`, named
-   `proposals/<short-slug>.yml`. The slug is only used for the proposal
-   file and for a human-friendly log entry — the eventual repository will
-   be called `in-NNN`, where `NNN` is assigned automatically.
-3. Fill in the file using the schema below.
-4. Open a Pull Request. CI will validate the schema and post a comment
-   saying which `in-NNN` number the proposal will be assigned on merge.
+2. Add a single YAML file under `proposals/`, named `proposals/<short-slug>.yml`. The slug is only used for the proposal file and for a human-friendly log entry — the eventual repository will be called `in-NNN`, where `NNN` is assigned automatically.
+3. Fill it in using the schema below.
+4. Open a Pull Request. The pull_request_template will prompt you for the other required sections.
+
+### Review and merge
+
 5. Two members of `@AMWA-TV/jt-dmf-in-admin` must approve.
 6. On merge, the mint workflow runs on `main` and creates the new repo.
 

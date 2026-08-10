@@ -1,0 +1,205 @@
+name: Propose new IN document (from issue)
+
+# Contributors open an issue using the "Propose new IN document" Issue
+# Form (.github/ISSUE_TEMPLATE/propose-in.yml). This workflow parses the
+# form fields, generates proposals/<slug>.yml, opens a PR against main
+# using the pull_request_template body, and closes the issue with a link
+# to the PR.
+
+on:
+  issues:
+    types: [opened, labeled, reopened]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: propose-in-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  propose:
+    # Only act on issues bearing the `proposal` label (set by the form).
+    if: contains(github.event.issue.labels.*.name, 'proposal')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Get GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.MINTER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.MINTER_APP_PRIVATE_KEY }}
+          owner: AMWA-TV
+
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Parse issue form and generate files
+        id: gen
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          python - <<'PY'
+          import os, re, pathlib, sys, yaml
+
+          body = os.environ["ISSUE_BODY"] or ""
+          # Issue Form bodies render each field as:
+          #   ### <Label>
+          #   <content>
+          # separated by blank lines. Parse into a {label: content} dict.
+          sections = {}
+          current = None
+          buf = []
+          for line in body.splitlines():
+              m = re.match(r"^###\s+(.+?)\s*$", line)
+              if m:
+                  if current is not None:
+                      sections[current] = "\n".join(buf).strip()
+                  current = m.group(1).strip()
+                  buf = []
+              else:
+                  buf.append(line)
+          if current is not None:
+              sections[current] = "\n".join(buf).strip()
+
+          def get(label, required=True):
+              v = sections.get(label, "").strip()
+              # Issue Forms emit "_No response_" for unfilled optional fields.
+              if v == "_No response_":
+                  v = ""
+              if required and not v:
+                  print(f"::error::Required field '{label}' is empty.", file=sys.stderr)
+                  sys.exit(1)
+              return v
+
+          title = get("Document title")
+          slug  = get("Slug")
+          short = get("Short description")
+          purpose  = get("Purpose")
+          scope_in = get("In scope")
+          scope_out = get("Out of scope")
+          relation  = get("Relation to other AMWA work")
+          maintainers_raw = get("Initial maintainers", required=False)
+
+          # Slug validation.
+          if not re.fullmatch(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?", slug):
+              print(f"::error::Invalid slug '{slug}'. Use lowercase letters, digits, hyphens; start/end alphanumeric.", file=sys.stderr)
+              sys.exit(1)
+
+          # Collision check.
+          for ext in ("yml", "yaml"):
+              if pathlib.Path(f"proposals/{slug}.{ext}").exists():
+                  print(f"::error::proposals/{slug}.{ext} already exists on main. Choose a different slug.", file=sys.stderr)
+                  sys.exit(1)
+
+          maintainers = [m.strip() for m in maintainers_raw.split(",") if m.strip()] if maintainers_raw else []
+
+          # 1. Write proposals/<slug>.yml
+          data = {"title": title, "short_description": short}
+          if maintainers:
+              data["initial_maintainers"] = maintainers
+          pathlib.Path("proposals").mkdir(exist_ok=True)
+          pathlib.Path(f"proposals/{slug}.yml").write_text(
+              yaml.safe_dump(data, sort_keys=False, allow_unicode=True),
+              encoding="utf-8",
+          )
+
+          # 2. Compose PR body mirroring pull_request_template.md.
+          mnt_md = "\n".join(f"- {m}" for m in maintainers) if maintainers else "- (none)"
+          issue_num = os.environ["ISSUE_NUMBER"]
+          issue_author = os.environ["ISSUE_AUTHOR"]
+
+          body_lines = [
+              f"_Generated from issue #{issue_num} opened by @{issue_author}._",
+              "",
+              f"Closes #{issue_num}.",
+              "",
+              "## Document title", "", title, "",
+              "## Slug", "", slug, "",
+              "## Short description", "", short, "",
+              "## Purpose", "", purpose, "",
+              "## Scope", "",
+              "**In scope:**", "", scope_in, "",
+              "**Out of scope:**", "", scope_out, "",
+              "## Relation to other AMWA work", "", relation, "",
+              "## Initial maintainers", "", mnt_md, "",
+              "## Pre-merge checklist", "",
+              "- [ ] I have added exactly one file at `proposals/<slug>.yml`.",
+              "- [ ] The proposal filename matches the **Slug** section above.",
+              "- [ ] `title` and `short_description` in the YAML match the sections above verbatim.",
+              "- [ ] The `validate-proposal` CI check is passing on this PR (schema-valid).",
+              "- [ ] A **dry-run** of the \"Mint IN-XXX repo\" workflow has been executed for this branch and the diff was reviewed.",
+              "- [ ] I understand the assigned `in-NNN` number is monotonic and can never be re-used or back-filled.",
+              "- [ ] Two approvals from [`@AMWA-TV/jt-dmf-in-admin`](https://github.com/orgs/AMWA-TV/teams/jt-dmf-in-admin) have been obtained. _(Reviewers: tick after the second approval.)_",
+              "",
+          ]
+          pathlib.Path("/tmp/pr_body.md").write_text("\n".join(body_lines), encoding="utf-8")
+
+          # Export slug and title to subsequent shell steps.
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"slug={slug}\n")
+              f.write(f"title={title}\n")
+
+          print(f"Wrote proposals/{slug}.yml and /tmp/pr_body.md")
+          PY
+
+      - name: Create branch, commit, and open PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          SLUG: ${{ steps.gen.outputs.slug }}
+          TITLE: ${{ steps.gen.outputs.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          branch="propose/${SLUG}"
+          git config user.name  'amwa-in-index-bot[bot]'
+          git config user.email 'amwa-in-index-bot[bot]@users.noreply.github.com'
+          git switch -c "${branch}"
+          git add "proposals/${SLUG}.yml"
+          git commit -m "propose: ${TITLE} (#${ISSUE_NUMBER})"
+
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push "${remote}" "${branch}"
+
+          pr_url=$(gh pr create \
+            --repo "${GITHUB_REPOSITORY}" \
+            --head "${branch}" \
+            --base main \
+            --title "propose: ${TITLE}" \
+            --body-file /tmp/pr_body.md)
+          echo "pr_url=${pr_url}" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on and close the issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          PR_URL: ${{ steps.pr.outputs.pr_url }}
+        run: |
+          set -euo pipefail
+          gh issue comment "${ISSUE_NUMBER}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --body "Thanks — I have opened ${PR_URL} for this proposal. Please continue the discussion there."
+          gh issue close "${ISSUE_NUMBER}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --reason "completed"
+
+      - name: On failure, comment on the issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue comment "${ISSUE_NUMBER}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --body "❌ I could not open a PR for this proposal automatically. See the [workflow run](${RUN_URL}) for details. Common causes: slug already in use, or invalid slug (must be lowercase, digits, hyphens; start/end alphanumeric). Please edit the issue and re-apply the \`proposal\` label to retry, or open the PR by hand."

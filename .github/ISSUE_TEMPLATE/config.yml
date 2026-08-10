@@ -1,0 +1,2 @@
+# Turn off the "open a blank issue" link — always use the form.
+blank_issues_enabled: false

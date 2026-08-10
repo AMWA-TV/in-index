@@ -6,9 +6,10 @@ and the automation that mints new `AMWA-TV/in-NNN` repositories from the
 
 ## How new IN documents are created
 
-1. Open a Pull Request that adds a single file under `proposals/`, e.g.
-   `proposals/my-topic.yml`. The file describes the document you want to
-   create; you do **not** pick the number.
+1. Either:
+   - Open a **New Issue** and pick “**Propose new IN document**” — fill in the form and a bot will open the PR for you and close the issue; **or**
+   - Open a PR by hand that adds a single file under `proposals/`, e.g.
+     `proposals/my-topic.yml`. You do **not** pick the number in either case.
 2. Two members of `@AMWA-TV/jt-dmf-in-admin` must approve the PR
    (enforced via `CODEOWNERS` + branch protection).
 3. On merge to `main`, the mint workflow:

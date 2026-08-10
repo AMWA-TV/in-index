@@ -1,0 +1,94 @@
+name: Propose new IN document
+description: Start the process of creating a new AMWA Increment (IN) document.
+title: "[Proposal] "
+labels: ["proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a new AMWA IN document! Fill in the fields
+        below. When you submit, a bot will:
+
+        1. Create a Pull Request that adds `proposals/<slug>.yml`.
+        2. Close this issue with a link to the PR.
+        3. CI will comment on the PR saying which `IN-NNN` number the
+           proposal will be minted as on merge.
+
+        The assigned number is monotonic — it can never be re-used.
+        Two approvals from `@AMWA-TV/jt-dmf-in-admin` are required to merge.
+
+  - type: input
+    id: title
+    attributes:
+      label: Document title
+      description: >
+        Verbatim title used in the new repo's README, spec.yml, site
+        header, and docs/Overview.md. Include a version if applicable.
+      placeholder: "API Requirements – Control of MXL v1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: slug
+    attributes:
+      label: Slug
+      description: >
+        Short lowercase-hyphenated identifier used only for the proposal
+        filename `proposals/<slug>.yml`. The eventual repo is `in-NNN`.
+      placeholder: "mxl-control-api"
+    validations:
+      required: true
+
+  - type: input
+    id: short_description
+    attributes:
+      label: Short description
+      description: One sentence for site metadata. Max 200 characters.
+      placeholder: "Requirements for a control API for MXL Readers/Writers"
+    validations:
+      required: true
+
+  - type: textarea
+    id: purpose
+    attributes:
+      label: Purpose
+      description: 2–4 sentences on what problem the document addresses and why.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope_in
+    attributes:
+      label: In scope
+      description: Bullet list of what is in scope.
+      value: |
+        -
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope_out
+    attributes:
+      label: Out of scope
+      description: Bullet list of what is explicitly out of scope.
+      value: |
+        -
+    validations:
+      required: true
+
+  - type: textarea
+    id: relation
+    attributes:
+      label: Relation to other AMWA work
+      description: Related NMOS specs, INFO docs, other IN documents. Write "None" if genuinely none.
+      value: |
+        -
+    validations:
+      required: true
+
+  - type: input
+    id: initial_maintainers
+    attributes:
+      label: Initial maintainers
+      description: Comma-separated GitHub usernames (optional). Recorded in index.yml for audit only.
+      placeholder: "alice, bob"

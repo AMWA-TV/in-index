@@ -1,6 +1,12 @@
 <!--
 Thank you for proposing a new AMWA IN document.
 
+💡 Prefer the form-driven flow: open a new issue with the
+“Propose new IN document” template (Issues → New Issue), fill in
+the form, and a bot will open the PR for you with all sections
+pre-filled. This template is for hand-authored PRs and for edits
+to existing proposals.
+
 This PR template is required. Fill in every section. Do not delete or
 rename section headings — CI matches them by name to enforce the
 Pre-merge checklist below.
