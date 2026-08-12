@@ -1,9 +1,9 @@
 # Configuration read by Zensical (which understands mkdocs.yml).
 # See https://zensical.org/compatibility/configuration/.
 
-site_name: AMWA Increment Documents
+site_name: AMWA Increments
 site_description: >-
-  Index of AMWA Increment (IN) documents — snapshots of ongoing AMWA
+  Index of AMWA Increments (IN) — snapshots of ongoing AMWA
   activity phases that may be referenced by NMOS or other specifications.
 site_url: https://specs.amwa.tv/new/in-index/
 

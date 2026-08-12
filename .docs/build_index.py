@@ -30,7 +30,7 @@ def render_index(data: dict) -> str:
     lines: list[str] = [
         "# AMWA Increment (IN) Documents",
         "",
-        "AMWA **Increment Documents** (IN-xxx) record incremental outputs of",
+        "AMWA **Increments** (IN-xxx) record incremental outputs of",
         "AMWA activity phases. They may stand on their own or be referenced",
         "by other AMWA documents such as the NMOS specifications.",
         "",
