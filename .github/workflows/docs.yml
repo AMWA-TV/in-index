@@ -1,6 +1,6 @@
 name: Docs
 
-# Renders the AMWA IN document index using Zensical.
+# Renders the AMWA Increment index using Zensical.
 # Modelled on ../nmos/.github/workflows/docs.yml.
 
 on:

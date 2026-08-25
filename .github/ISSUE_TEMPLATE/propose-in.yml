@@ -1,12 +1,12 @@
-name: Propose new IN document
-description: Start the process of creating a new AMWA Increment (IN) document.
+name: Propose new AMWA Increment (IN-xxx)
+description: Start the process of creating a new AMWA Increment (IN-xxx).
 title: "[Proposal] "
 labels: ["proposal"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for proposing a new AMWA IN document! Fill in the fields
+        Thanks for proposing a new AMWA Increment! Fill in the fields
         below. When you submit, a bot will:
 
         1. Create a Pull Request that adds `proposals/<slug>.yml`.
@@ -20,7 +20,7 @@ body:
   - type: input
     id: title
     attributes:
-      label: Document title
+      label: Title
       description: >
         Verbatim title used in the new repo's README, spec.yml, site
         header, and docs/Overview.md. Include a version if applicable.
@@ -52,7 +52,7 @@ body:
     id: purpose
     attributes:
       label: Purpose
-      description: 2–4 sentences on what problem the document addresses and why.
+      description: 2–4 sentences on what problem the Increment addresses and why.
     validations:
       required: true
 
@@ -80,7 +80,7 @@ body:
     id: relation
     attributes:
       label: Relation to other AMWA work
-      description: Related NMOS specs, INFO docs, other IN documents. Write "None" if genuinely none.
+      description: Related NMOS specs, INFO docs, other Increments, etc. Write "None" if genuinely none.
       value: |
         -
     validations:

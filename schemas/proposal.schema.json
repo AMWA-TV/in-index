@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "AMWA IN document proposal",
+  "title": "AMWA Increment proposal",
   "type": "object",
   "additionalProperties": false,
   "required": ["title", "short_description"],
@@ -8,7 +8,7 @@
     "title": {
       "type": "string",
       "minLength": 5,
-      "description": "Human-readable document title."
+      "description": "Human-readable Increment title."
     },
     "short_description": {
       "type": "string",

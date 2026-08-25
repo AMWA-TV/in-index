@@ -1,14 +1,14 @@
 # Contributing to `in-index`
 
-## Proposing a new IN document
+## Proposing a new Increment
 
-There are two ways to propose a new IN document. Both end up in the same
+There are two ways to propose a new Increment. Both end up in the same
 place: a PR that adds `proposals/<slug>.yml` and is gated by
 [`CODEOWNERS`](.github/CODEOWNERS) + branch protection.
 
 ### Option A: form-driven (recommended)
 
-1. Go to **Issues → New Issue → “Propose new IN document”** and fill in the form.
+1. Go to **Issues → New Issue → “Propose new AMWA Increment (IN-xxx)”** and fill in the form.
 2. A bot will open a PR containing the generated `proposals/<slug>.yml`, and close your issue with a link to the PR.
 3. Continue on the PR: tick the remaining checklist items and request review.
 
@@ -29,8 +29,8 @@ place: a PR that adds `proposals/<slug>.yml` and is gated by
 ```yaml
 # proposals/example.yml
 
-# Human-readable document title. Will be used verbatim as the AMWA
-# document name.
+# Human-readable Increment title. Will be used verbatim as the AMWA
+# Increment name.
 title: "API Requirements – Control of MXL v1.0"
 
 # One-sentence description used in the site metadata.
@@ -50,7 +50,7 @@ The JSON Schema used by CI lives at
 
 - Numbers are monotonically increasing. `index.yml`'s `last_assigned`
   field is the source of truth.
-- Numbers are **never re-used** and **never back-filled**. If a document
+- Numbers are **never re-used** and **never back-filled**. If an Increment
   is withdrawn, its entry in `index.yml` is marked `status: withdrawn`
   and its number is retained.
 - Numbers are zero-padded to three digits in repo names (`in-001`,

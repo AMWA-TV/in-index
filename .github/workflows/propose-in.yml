@@ -1,6 +1,6 @@
-name: Propose new IN document (from issue)
+name: Propose new Increment (from issue)
 
-# Contributors open an issue using the "Propose new IN document" Issue
+# Contributors open an issue using the "Propose new AMWA Increment (IN-xxx)" Issue
 # Form (.github/ISSUE_TEMPLATE/propose-in.yml). This workflow parses the
 # form fields, generates proposals/<slug>.yml, opens a PR against main
 # using the pull_request_template body, and closes the issue with a link

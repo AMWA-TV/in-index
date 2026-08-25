@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Generate the Zensical/MkDocs source tree for the IN document index.
+"""Generate the Zensical/MkDocs source tree for the Increment index.
 
-Reads `index.yml` (the authoritative record of issued IN documents) and
+Reads `index.yml` (the authoritative record of issued Increments) and
 writes a single landing page into `build/docs/index.md`. Kept intentionally
 minimal — one page, one table — to match the current information density
 of the index. When we want per-document pages, tags, or filtering, we can
@@ -46,7 +46,7 @@ def render_index(data: dict) -> str:
     ]
 
     if not docs:
-        lines.append("_No IN documents have been issued yet._")
+        lines.append("_No Increments have been issued yet._")
     else:
         lines += [
             "| Number | Title | Repository | Site | Status |",

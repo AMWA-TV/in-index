@@ -1,6 +1,6 @@
 # Pending proposals
 
-Add one YAML file per proposed IN document here. Filename should be
+Add one YAML file per proposed Increment here. Filename should be
 `<short-slug>.yml`. See [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for
 the schema. The file is deleted automatically after the proposal is
 minted into an `in-NNN` repo; the historical record lives in

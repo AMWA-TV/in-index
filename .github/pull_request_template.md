@@ -1,8 +1,8 @@
 <!--
-Thank you for proposing a new AMWA IN document.
+Thank you for proposing a new AMWA Increment.
 
 💡 Prefer the form-driven flow: open a new issue with the
-“Propose new IN document” template (Issues → New Issue), fill in
+“Propose new AMWA Increment (IN-xxx)” template (Issues → New Issue), fill in
 the form, and a bot will open the PR for you with all sections
 pre-filled. This template is for hand-authored PRs and for edits
 to existing proposals.
@@ -15,7 +15,7 @@ If you are still drafting, open the PR as a **Draft** and come back to
 tick the boxes when ready.
 -->
 
-## Document title
+## Increment title
 
 <!-- The human-readable title, used verbatim in the new repo's README,
 spec.yml, zensical.toml site_name/site_description, and docs/Overview.md.
@@ -41,7 +41,7 @@ _Replace this line with the short description._
 
 ## Purpose
 
-<!-- 2–4 sentences: what problem does this document address, and why is
+<!-- 2–4 sentences: what problem does this Increment address, and why is
 it needed now? -->
 
 _Replace this paragraph._
@@ -61,7 +61,7 @@ scope. Being explicit here saves later discussion. -->
 
 ## Relation to other AMWA work
 
-<!-- Any related NMOS specs, INFO documents, other IN documents, or
+<!-- Any related NMOS specs, INFO documents, other IN Increments, or
 external references. Write "None" if genuinely none. -->
 
 -

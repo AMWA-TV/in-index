@@ -1,13 +1,13 @@
-# AMWA IN Document Index
+# AMWA Increment Index
 
-This repository is the authoritative index of AMWA **Increment (IN) documents**
+This repository is the authoritative index of AMWA **Increments (IN-xxx) **
 and the automation that mints new `AMWA-TV/in-NNN` repositories from the
 [`in-template`](https://github.com/AMWA-TV/in-template) template.
 
-## How new IN documents are created
+## How new Increments are created
 
 1. Either:
-   - Open a **New Issue** and pick “**Propose new IN document**” — fill in the form and a bot will open the PR for you and close the issue; **or**
+   - Open a **New Issue** and pick “**Propose new AMWA Increment (IN-xxx)**” — fill in the form and a bot will open the PR for you and close the issue; **or**
    - Open a PR by hand that adds a single file under `proposals/`, e.g.
      `proposals/my-topic.yml`. You do **not** pick the number in either case.
 2. Two members of `@AMWA-TV/jt-dmf-in-admin` must approve the PR
@@ -26,7 +26,7 @@ and the automation that mints new `AMWA-TV/in-NNN` repositories from the
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the proposal file schema and
 the full workflow.
 
-## Issued documents
+## Issued Increments
 
 <!-- INDEX-START -->
 <!-- This table is regenerated from index.yml by .github/scripts/regenerate-readme.sh -->
