@@ -8,7 +8,7 @@ name: Propose new Increment (from issue)
 
 on:
   issues:
-    types: [opened, labeled, reopened]
+    types: [opened, edited, labeled, reopened]
 
 permissions:
   contents: read
@@ -20,8 +20,14 @@ concurrency:
 
 jobs:
   propose:
-    # Only act on issues bearing the `proposal` label (set by the form).
-    if: contains(github.event.issue.labels.*.name, 'proposal')
+    # Act on issues raised via the proposal Issue Form. We accept either the
+    # `proposal` label OR the form's fingerprint in the body, because
+    # form-applied labels can be absent/racy in the `opened` event payload
+    # (and are dropped entirely if the label doesn't exist in the repo).
+    # The body heading below is emitted by the Issue Form.
+    if: >-
+      contains(github.event.issue.labels.*.name, 'proposal') ||
+      contains(github.event.issue.body, '### Relation to other AMWA work')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5

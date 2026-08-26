@@ -67,7 +67,7 @@ print(int((yaml.safe_load(open("index.yml")) or {}).get("last_assigned", 0)))
 '
 }
 
-# Append a document entry and bump last_assigned in index.yml, preserving
+# Append an increment entry and bump last_assigned in index.yml, preserving
 # ordering and comments as best we can. We use ruamel.yaml if available for
 # comment-preservation, else fall back to PyYAML (which drops comments).
 append_index_entry() {
@@ -96,7 +96,7 @@ with p.open() as f:
     data = load(f) or {}
 
 data["last_assigned"] = int(number)
-data.setdefault("documents", []).append({
+data.setdefault("increments", []).append({
     "number": int(number),
     "repo": repo,
     "title": title,

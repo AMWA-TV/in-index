@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Rewrite the "Issued documents" table in README.md from index.yml.
+# Rewrite the "Issued increments" table in README.md from index.yml.
 # Idempotent: no-ops if the table already matches.
 
 set -euo pipefail
@@ -8,7 +8,7 @@ set -euo pipefail
 table=$(python - <<'PY'
 import yaml
 data = yaml.safe_load(open("index.yml")) or {}
-docs = sorted(data.get("documents") or [], key=lambda d: d["number"])
+docs = sorted(data.get("increments") or [], key=lambda d: d["number"])
 lines = [
     "| Number | Title | Repo | Status |",
     "|--------|-------|------|--------|",

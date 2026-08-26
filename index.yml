@@ -1,8 +1,8 @@
-# Authoritative index of AMWA Increment (IN) documents.
+# Authoritative index of AMWA Increments (IN-xxx) .
 #
 # This file is updated automatically by .github/workflows/mint-in-repo.yml
 # when a new proposal is merged. Manual edits are allowed for status
-# changes (e.g. marking a document withdrawn) but 'last_assigned' should
+# changes (e.g. marking a increment withdrawn) but 'last_assigned' should
 # never be decreased and existing entries should never be removed.
 
 # The highest number ever assigned. Never decrease.
