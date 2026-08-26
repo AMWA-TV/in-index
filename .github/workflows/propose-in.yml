@@ -87,7 +87,21 @@ jobs:
                   sys.exit(1)
               return v
 
-          title = get("Document title")
+          def get_any(labels, required=True):
+              # Accept any of several acceptable heading labels (the Issue
+              # Form's label wording may drift). Returns the first non-empty.
+              for lab in labels:
+                  v = sections.get(lab, "").strip()
+                  if v == "_No response_":
+                      v = ""
+                  if v:
+                      return v
+              if required:
+                  print(f"::error::None of the expected headings {labels} were filled in.", file=sys.stderr)
+                  sys.exit(1)
+              return ""
+
+          title = get_any(["Title", "Document title"])
           slug  = get("Slug")
           short = get("Short description")
           purpose  = get("Purpose")

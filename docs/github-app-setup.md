@@ -15,6 +15,8 @@ cannot do that, so we use a dedicated GitHub App.
    - **Contents:** *Read & write* — needed to push customisations to the new repo and to update `index.yml` in this repo.
    - **Metadata:** *Read* (default, required).
    - **Secrets:** *Read & write* — needed to copy `SSH_*` into new repos.
+   - **Pull requests:** *Read & write* — needed to open the proposal PR.
+   - **Issues:** *Read & write* — needed to comment on and close the proposal issue.
    - **Actions:** *Read* — used to look up the workflow log URL for the summary comment (optional).
 6. Under **Where can this GitHub App be installed?**, select **Only on this account**.
 7. Create the App, then **Generate a private key** and download the `.pem` file.
