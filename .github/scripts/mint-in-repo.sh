@@ -96,7 +96,7 @@ with p.open() as f:
     data = load(f) or {}
 
 data["last_assigned"] = int(number)
-data.setdefault("increments", []).append({
+data.setdefault("documents", []).append({
     "number": int(number),
     "repo": repo,
     "title": title,

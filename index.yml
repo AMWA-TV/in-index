@@ -6,7 +6,7 @@
 # never be decreased and existing entries should never be removed.
 
 # The highest number ever assigned. Never decrease.
-last_assigned: 2
+last_assigned: 3
 
 documents:
   - number: 1
@@ -22,3 +22,14 @@ documents:
     status: active
     minted_at: "2025-01-01T00:00:00Z"  # pre-automation seed entry
     initial_maintainers: []
+
+  - number: 3
+    repo: AMWA-TV/in-003
+    title: "Compute Resource Management Manifest and Examples"
+    status: active
+    minted_at: "2026-08-26T16:01:31Z"  # minted manually during GitHub Actions outage
+    minted_from_proposal: proposals/crm-manifest-and-examples.yml
+    initial_maintainers:
+      - sviengkhou
+      - sundayN
+      - peterbrightwell

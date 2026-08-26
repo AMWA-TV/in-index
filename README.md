@@ -35,6 +35,7 @@ the full workflow.
 |--------|-------|------|--------|
 | IN-001 | API Requirements – Control of MXL v1.0 | [`AMWA-TV/in-001`](https://github.com/AMWA-TV/in-001) | active |
 | IN-002 | Time and Identity in the Dynamic Media Facility | [`AMWA-TV/in-002`](https://github.com/AMWA-TV/in-002) | active |
+| IN-003 | Compute Resource Management Manifest and Examples | [`AMWA-TV/in-003`](https://github.com/AMWA-TV/in-003) | active |
 
 <!-- INDEX-END -->
 
