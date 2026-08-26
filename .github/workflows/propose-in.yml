@@ -30,10 +30,6 @@ jobs:
       contains(github.event.issue.body, '### Relation to other AMWA work')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
       - name: Get GitHub App token
         id: app-token
         uses: actions/create-github-app-token@v3
@@ -41,6 +37,14 @@ jobs:
           client-id: ${{ secrets.MINTER_APP_CLIENT_ID }}
           private-key: ${{ secrets.MINTER_APP_PRIVATE_KEY }}
           owner: AMWA-TV
+
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          # Persist the App token (not the default GITHUB_TOKEN) so that
+          # `git push` authenticates as the App and can write to the repo.
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: true
 
       - name: Install tooling
         run: |
@@ -182,22 +186,40 @@ jobs:
         run: |
           set -euo pipefail
           branch="propose/${SLUG}"
+
+          echo "::group::Prepare branch and commit"
+          test -f "proposals/${SLUG}.yml" || { echo "::error::proposals/${SLUG}.yml missing (SLUG='${SLUG}')"; exit 1; }
           git config user.name  'amwa-in-index-bot[bot]'
           git config user.email 'amwa-in-index-bot[bot]@users.noreply.github.com'
           git switch -c "${branch}"
           git add "proposals/${SLUG}.yml"
           git commit -m "propose: ${TITLE} (#${ISSUE_NUMBER})"
+          echo "::endgroup::"
 
-          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push "${remote}" "${branch}"
+          echo "::group::Push branch ${branch}"
+          # checkout persisted the App token as origin's credential
+          # (persist-credentials + token above), so push as origin.
+          if ! git push origin "${branch}" 2>push.err; then
+            cat push.err >&2
+            echo "::error::git push failed. The App token likely lacks 'Contents: write', or a ruleset blocks branch creation."
+            exit 1
+          fi
+          echo "::endgroup::"
 
-          pr_url=$(gh pr create \
-            --repo "${GITHUB_REPOSITORY}" \
-            --head "${branch}" \
-            --base main \
-            --title "propose: ${TITLE}" \
-            --body-file /tmp/pr_body.md)
+          echo "::group::Open PR"
+          if ! pr_url=$(gh pr create \
+              --repo "${GITHUB_REPOSITORY}" \
+              --head "${branch}" \
+              --base main \
+              --title "propose: ${TITLE}" \
+              --body-file /tmp/pr_body.md 2>pr.err); then
+            cat pr.err >&2
+            echo "::error::gh pr create failed. The App token likely lacks 'Pull requests: write' (add it and approve the permission update on the installation)."
+            exit 1
+          fi
+          echo "Opened ${pr_url}"
           echo "pr_url=${pr_url}" >> "$GITHUB_OUTPUT"
+          echo "::endgroup::"
 
       - name: Comment on and close the issue
         env:
@@ -222,4 +244,4 @@ jobs:
         run: |
           gh issue comment "${ISSUE_NUMBER}" \
             --repo "${GITHUB_REPOSITORY}" \
-            --body "❌ I could not open a PR for this proposal automatically. See the [workflow run](${RUN_URL}) for details. Common causes: slug already in use, or invalid slug (must be lowercase, digits, hyphens; start/end alphanumeric). Please edit the issue and re-apply the \`proposal\` label to retry, or open the PR by hand."
+            --body "❌ I could not process this proposal automatically. See the [workflow run](${RUN_URL}) for the failing step and error. Once resolved, edit this issue (or re-apply the \`proposal\` label) to retry."
