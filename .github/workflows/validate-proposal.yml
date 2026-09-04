@@ -71,9 +71,11 @@ jobs:
       - name: Comment on PR with predicted number(s)
         if: steps.validate.outputs.summary != ''
         uses: actions/github-script@v8
+        env:
+          MINT_PREVIEW: ${{ steps.validate.outputs.summary }}
         with:
           script: |
-            const summary = `${{ steps.validate.outputs.summary }}`;
+            const summary = process.env.MINT_PREVIEW || '';
             if (!summary.trim()) return;
             const marker = '<!-- in-index:mint-preview -->';
             const body = `${marker}\n${summary}`;

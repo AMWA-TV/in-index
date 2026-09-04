@@ -199,23 +199,55 @@ jobs:
           echo "::group::Push branch ${branch}"
           # checkout persisted the App token as origin's credential
           # (persist-credentials + token above), so push as origin.
+          # Two issue events can arrive together (for example `opened` and
+          # the form-applied `labeled` event). If another run created the
+          # same branch first, accept it only when its tree is identical.
           if ! git push origin "${branch}" 2>push.err; then
-            cat push.err >&2
-            echo "::error::git push failed. The App token likely lacks 'Contents: write', or a ruleset blocks branch creation."
-            exit 1
+            if git fetch origin "refs/heads/${branch}:refs/remotes/origin/${branch}" 2>/dev/null \
+                && git diff --quiet HEAD "refs/remotes/origin/${branch}"; then
+              echo "Branch ${branch} was created by a concurrent run; reusing it."
+            else
+              cat push.err >&2
+              echo "::error::git push failed. The App token likely lacks 'Contents: write', a ruleset blocks branch creation, or the existing branch differs."
+              exit 1
+            fi
           fi
           echo "::endgroup::"
 
           echo "::group::Open PR"
-          if ! pr_url=$(gh pr create \
+          # Reuse a PR created by a concurrent/retried event instead of
+          # failing on the duplicate branch.
+          pr_url=$(gh pr list \
               --repo "${GITHUB_REPOSITORY}" \
               --head "${branch}" \
               --base main \
-              --title "propose: ${TITLE}" \
-              --body-file /tmp/pr_body.md 2>pr.err); then
-            cat pr.err >&2
-            echo "::error::gh pr create failed. The App token likely lacks 'Pull requests: write' (add it and approve the permission update on the installation)."
-            exit 1
+              --state open \
+              --json url \
+              --jq '.[0].url')
+          if [[ -z "${pr_url}" ]]; then
+            if ! pr_url=$(gh pr create \
+                --repo "${GITHUB_REPOSITORY}" \
+                --head "${branch}" \
+                --base main \
+                --title "propose: ${TITLE}" \
+                --body-file /tmp/pr_body.md 2>pr.err); then
+              # Another run may have opened it between the list and create.
+              pr_url=$(gh pr list \
+                  --repo "${GITHUB_REPOSITORY}" \
+                  --head "${branch}" \
+                  --base main \
+                  --state open \
+                  --json url \
+                  --jq '.[0].url')
+              if [[ -z "${pr_url}" ]]; then
+                cat pr.err >&2
+                echo "::error::gh pr create failed. The App token likely lacks 'Pull requests: write' (add it and approve the permission update on the installation)."
+                exit 1
+              fi
+              echo "A concurrent run opened ${pr_url}; reusing it."
+            fi
+          else
+            echo "Reusing existing ${pr_url}"
           fi
           echo "Opened ${pr_url}"
           echo "pr_url=${pr_url}" >> "$GITHUB_OUTPUT"
