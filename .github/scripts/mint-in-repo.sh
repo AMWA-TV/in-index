@@ -163,10 +163,20 @@ data["repo_url"]  = "https://github.com/${ORG}/${NEW_REPO_NAME}"
 p.write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True))
 PY
 
+    # .render/_config.yml
+    if [[ -f .render/_config.yml ]]; then
+        sed -i -E \
+            -e "s#^amwa_id: .*#amwa_id: ${AMWA_ID}#" \
+            -e "s#^baseurl: .*#baseurl: /${NEW_REPO_NAME}#" \
+            .render/_config.yml
+    fi
+
     # zensical.toml
     sed -i -E \
         -e "s#^site_name = .*#site_name = \"${AMWA_ID}\"#" \
         -e "s#^site_description = .*#site_description = \"AMWA ${AMWA_ID}: ${DOC_TITLE}\"#" \
+        -e "s#^repo_url = .*#repo_url = \"https://github.com/${ORG}/${NEW_REPO_NAME}\"#" \
+        -e "s#^repo_name = .*#repo_name = \"${ORG}/${NEW_REPO_NAME}\"#" \
         zensical.toml
 
     # docs/Overview.md: replace only the first H1.
@@ -184,9 +194,12 @@ p.write_text("".join(lines))
 PY
     fi
 
-    # docs.yml: update the SITE_NAME env value.
+    # docs.yml: update the SITE_NAME env value and the landing-page check.
     if [[ -f .github/workflows/docs.yml ]]; then
-        sed -i -E "s#(SITE_NAME:\\s*)in-template#\\1${NEW_REPO_NAME}#" .github/workflows/docs.yml
+        sed -i -E \
+            -e "s#(SITE_NAME:\s*)in-template#\1${NEW_REPO_NAME}#" \
+            -e "s#grep -Fq \"Template for AMWA Increments\"#grep -Fq \"${DOC_TITLE}\"#" \
+            .github/workflows/docs.yml
     fi
 }
 
@@ -206,7 +219,11 @@ wait_for_repo_ready() {
     # default branch.
     local repo="$1" i
     for i in $(seq 1 30); do
-        if gh api "repos/${repo}" --jq '.default_branch' 2>/dev/null | grep -q .; then
+        # Repository generation creates the repo/default branch before the
+        # template contents are necessarily available. Wait for a known
+        # template file as well, otherwise the first clone can be empty.
+        if gh api "repos/${repo}" --jq '.default_branch' 2>/dev/null | grep -q . \
+            && gh api "repos/${repo}/contents/README.md" --jq '.sha' 2>/dev/null | grep -q .; then
             return 0
         fi
         sleep 2
