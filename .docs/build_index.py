@@ -4,7 +4,7 @@
 Reads `index.yml` (the authoritative record of issued Increments) and
 writes a single landing page into `build/docs/index.md`. Kept intentionally
 minimal — one page, one table — to match the current information density
-of the index. When we want per-document pages, tags, or filtering, we can
+of the index. When we want per-Increment pages, tags, or filtering, we can
 grow this along the lines of ../nmos/.docs/build_index.py.
 """
 
@@ -28,7 +28,7 @@ def render_index(data: dict) -> str:
     last = int(data.get("last_assigned", 0))
 
     lines: list[str] = [
-        "# AMWA Increment (IN) Documents",
+        "# AMWA Increments (IN) Index",
         "",
         "AMWA **Increments** (IN-xxx) record incremental outputs of",
         "AMWA activity phases. They may stand on their own or be referenced",
@@ -37,11 +37,11 @@ def render_index(data: dict) -> str:
         "The authoritative machine-readable index is",
         "[`index.yml`](https://github.com/AMWA-TV/in-index/blob/main/index.yml)",
         "in the [`AMWA-TV/in-index`](https://github.com/AMWA-TV/in-index)",
-        "repository. New documents are created via a Pull Request on that repo;",
+        "repository. New Increments are created via a Pull Request on that repo;",
         "see its [CONTRIBUTING.md](https://github.com/AMWA-TV/in-index/blob/main/CONTRIBUTING.md)",
         "for the process.",
         "",
-        "## Issued documents",
+        "## Issued Increments",
         "",
     ]
 
@@ -71,7 +71,7 @@ def render_index(data: dict) -> str:
     #     "---",
     #     "",
     #     f"_Highest number ever assigned: **{last}**. Numbers are monotonic and are_",
-    #     "_never re-used or back-filled — withdrawn documents retain their number._",
+    #     "_never re-used or back-filled — withdrawn Increments retain their number._",
     #     "",
     # ]
     return "\n".join(lines) + "\n"
