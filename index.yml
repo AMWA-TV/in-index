@@ -6,7 +6,7 @@
 # never be decreased and existing entries should never be removed.
 
 # The highest number ever assigned. Never decrease.
-last_assigned: 3
+last_assigned: 4
 
 documents:
   - number: 1
@@ -32,4 +32,13 @@ documents:
     initial_maintainers:
       - sviengkhou
       - sundayN
+      - peterbrightwell
+
+  - number: 4
+    repo: AMWA-TV/in-004
+    title: "Flow Connection Phase 2 Requirements and Gaps"
+    status: active
+    minted_at: "2026-09-04T17:26:00Z"
+    minted_from_proposal: proposals/mxl-phase-2-reqs-gaps.yml
+    initial_maintainers:
       - peterbrightwell
