@@ -66,14 +66,14 @@ def render_index(data: dict) -> str:
                 f"| {padded} | {title} | {repo_md} | {site_md} | {status} |"
             )
 
-    lines += [
-        "",
-        "---",
-        "",
-        f"_Highest number ever assigned: **{last}**. Numbers are monotonic and are_",
-        "_never re-used or back-filled — withdrawn documents retain their number._",
-        "",
-    ]
+    # lines += [
+    #     "",
+    #     "---",
+    #     "",
+    #     f"_Highest number ever assigned: **{last}**. Numbers are monotonic and are_",
+    #     "_never re-used or back-filled — withdrawn documents retain their number._",
+    #     "",
+    # ]
     return "\n".join(lines) + "\n"
 
 
