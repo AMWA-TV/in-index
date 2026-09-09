@@ -134,6 +134,20 @@ set_repo_secret() {
     printf '%s' "${value}" | gh secret set "${name}" --repo "${repo}" --body -
 }
 
+validate_upload_secrets() {
+    # Fail before creating a repository if the source values are placeholders
+    # or already contain SSH command-line syntax. Otherwise a mint can create a
+    # repository successfully and only fail later in its documentation upload.
+    if [[ "${SSH_USER:0:1}" == "-" || "${SSH_USER}" == "-" || "${SSH_USER}" == *"@"* || "${SSH_USER}" == *" "* ]]; then
+        echo "error: source SSH_USER must be a username only; update the in-index secret" >&2
+        return 1
+    fi
+    if [[ "${SSH_HOST:0:1}" == "-" || "${SSH_HOST}" == "-" || "${SSH_HOST}" == *"://"* || "${SSH_HOST}" == *"/"* || "${SSH_HOST}" == *"@"* || "${SSH_HOST}" == *" "* ]]; then
+        echo "error: source SSH_HOST must be a hostname only; update the in-index secret" >&2
+        return 1
+    fi
+}
+
 # ---------------------------------------------------------------------------
 # In-place customisation of a freshly-cloned in-NNN checkout.
 #
@@ -275,6 +289,9 @@ for var in "${required_vars[@]}"; do
         exit 1
     fi
 done
+if [[ "$DRY_RUN" != "1" ]]; then
+    validate_upload_secrets
+fi
 
 shopt -s nullglob
 proposals=( proposals/*.yml proposals/*.yaml )
