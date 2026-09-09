@@ -1,44 +1,40 @@
-# Authoritative index of AMWA Increments (IN-xxx) .
-#
-# This file is updated automatically by .github/workflows/mint-in-repo.yml
-# when a new proposal is merged. Manual edits are allowed for status
-# changes (e.g. marking a increment withdrawn) but 'last_assigned' should
-# never be decreased and existing entries should never be removed.
-
-# The highest number ever assigned. Never decrease.
-last_assigned: 4
-
+last_assigned: 5
 documents:
-  - number: 1
-    repo: AMWA-TV/in-001
-    title: "API Requirements – Control of MXL v1.0"
-    status: active
-    minted_at: "2025-01-01T00:00:00Z"  # pre-automation seed entry
-    initial_maintainers: []
-
-  - number: 2
-    repo: AMWA-TV/in-002
-    title: "Time and Identity in the Dynamic Media Facility"
-    status: active
-    minted_at: "2025-01-01T00:00:00Z"  # pre-automation seed entry
-    initial_maintainers: []
-
-  - number: 3
-    repo: AMWA-TV/in-003
-    title: "Compute Resource Management Manifest and Examples"
-    status: active
-    minted_at: "2026-08-26T16:01:31Z"  # minted manually during GitHub Actions outage
-    minted_from_proposal: proposals/crm-manifest-and-examples.yml
-    initial_maintainers:
-      - sviengkhou
-      - sundayN
-      - peterbrightwell
-
-  - number: 4
-    repo: AMWA-TV/in-004
-    title: "Flow Connection Phase 2 Requirements and Gaps"
-    status: active
-    minted_at: "2026-09-04T17:26:00Z"
-    minted_from_proposal: proposals/mxl-phase-2-reqs-gaps.yml
-    initial_maintainers:
-      - peterbrightwell
+- number: 1
+  repo: AMWA-TV/in-001
+  title: API Requirements – Control of MXL v1.0
+  status: active
+  minted_at: '2025-01-01T00:00:00Z'
+  initial_maintainers: []
+- number: 2
+  repo: AMWA-TV/in-002
+  title: Time and Identity in the Dynamic Media Facility
+  status: active
+  minted_at: '2025-01-01T00:00:00Z'
+  initial_maintainers: []
+- number: 3
+  repo: AMWA-TV/in-003
+  title: Compute Resource Management Manifest and Examples
+  status: active
+  minted_at: '2026-08-26T16:01:31Z'
+  minted_from_proposal: proposals/crm-manifest-and-examples.yml
+  initial_maintainers:
+  - sviengkhou
+  - sundayN
+  - peterbrightwell
+- number: 4
+  repo: AMWA-TV/in-004
+  title: Flow Connection Phase 2 Requirements and Gaps
+  status: active
+  minted_at: '2026-09-04T17:26:00Z'
+  minted_from_proposal: proposals/mxl-phase-2-reqs-gaps.yml
+  initial_maintainers:
+  - peterbrightwell
+- number: 5
+  repo: AMWA-TV/in-005
+  title: '[Timing] Principles of External Signal Ingress for DMF Media Workloads'
+  status: active
+  minted_at: '2026-09-09T17:15:26Z'
+  minted_from_proposal: proposals/005-timing-principles-external-signal-ingress.yml
+  initial_maintainers:
+  - peterbrightwell
