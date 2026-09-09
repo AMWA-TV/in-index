@@ -13,7 +13,7 @@ on:
     # site whenever any of the inputs to build_index.py change.
     paths:
       - "index.yml"
-      - "mkdocs.yml"
+      - "zensical.toml"
       - ".docs/**"
       - ".github/workflows/docs.yml"
   pull_request:
@@ -21,7 +21,7 @@ on:
       - main
     paths:
       - "index.yml"
-      - "mkdocs.yml"
+      - "zensical.toml"
       - ".docs/**"
       - ".github/workflows/docs.yml"
 
@@ -32,10 +32,21 @@ jobs:
   build:
     name: Build with Zensical
     runs-on: ubuntu-latest
+    env:
+      TOOLKIT_DIR: .amwa-spec-docs
+      DOCS_DIR: build/docs
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
+
+      - name: Check out shared AMWA documentation toolkit
+        uses: actions/checkout@v5
+        with:
+          repository: AMWA-TV/amwa-spec-docs
+          ref: main
+          path: .amwa-spec-docs
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -51,6 +62,13 @@ jobs:
 
       - name: Generate index page
         run: python .docs/build_index.py
+
+      - name: Apply shared AMWA branding
+        run: |
+          bash "${TOOLKIT_DIR}/scripts/apply-branding.sh"
+          test -s build/docs/images/AMWA-logo.png
+          grep -Fq "https://www.amwa.tv" build/docs/javascripts/amwa-branding.js
+          grep -Fq "https://static.wixstatic.com/media/219a48_9e03812d08064ed0a8be326563d9cb9c~mv2.png" build/docs/javascripts/amwa-branding.js
 
       - name: Build site
         run: zensical build --strict
