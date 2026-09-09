@@ -144,30 +144,68 @@ set_repo_secret() {
 #   SHORT_DESCRIPTION   e.g. "One-sentence summary"
 # ---------------------------------------------------------------------------
 customise_new_repo() {
-    # README.md: replace the badge links' repo slug and the H1 title.
-    sed -i -E \
-        -e "s#(AMWA-TV/)in-template#\\1${NEW_REPO_NAME}#g" \
-        -e "1s#.*#\\# \\\\[Work In Progress\\\\] AMWA ${AMWA_ID}: ${DOC_TITLE}#" \
-        README.md
+    # README.md: replace repository links and the H1 title. Use Python rather
+    # than sed for the title so slashes, ampersands, and quotes in an issue
+    # title cannot corrupt the file or abort the mint.
+    python - <<'PY'
+import os
+from pathlib import Path
+
+path = Path("README.md")
+text = path.read_text(encoding="utf-8")
+text = text.replace("AMWA-TV/in-template", f"{os.environ['ORG']}/{os.environ['NEW_REPO_NAME']}")
+lines = text.splitlines(keepends=True)
+if lines:
+    lines[0] = (
+        f"# \\[Work In Progress\\] AMWA {os.environ['AMWA_ID']}: "
+        f"{os.environ['DOC_TITLE']}\\n"
+    )
+path.write_text("".join(lines), encoding="utf-8")
+PY
 
     # spec.yml
-    python - <<PY
-import yaml, pathlib
-p = pathlib.Path("spec.yml")
-data = yaml.safe_load(p.read_text()) or {}
-data["amwa_id"]   = "${AMWA_ID}"
-data["url"]       = "https://specs.amwa.tv/${NEW_REPO_NAME}"
-data["name"]      = """${DOC_TITLE}"""
-data["repo_name"] = "${NEW_REPO_NAME}"
-data["repo_url"]  = "https://github.com/${ORG}/${NEW_REPO_NAME}"
-p.write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True))
+    python - <<'PY'
+import os
+from pathlib import Path
+import yaml
+
+path = Path("spec.yml")
+data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+data["amwa_id"] = os.environ["AMWA_ID"]
+data["url"] = f"https://specs.amwa.tv/{os.environ['NEW_REPO_NAME']}"
+data["name"] = os.environ["DOC_TITLE"]
+data["repo_name"] = os.environ["NEW_REPO_NAME"]
+data["repo_url"] = f"https://github.com/{os.environ['ORG']}/{os.environ['NEW_REPO_NAME']}"
+path.write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True), encoding="utf-8")
 PY
 
     # zensical.toml
-    sed -i -E \
-        -e "s#^site_name = .*#site_name = \"${AMWA_ID}\"#" \
-        -e "s#^site_description = .*#site_description = \"AMWA ${AMWA_ID}: ${DOC_TITLE}\"#" \
-        zensical.toml
+    python - <<'PY'
+import json
+import os
+import re
+from pathlib import Path
+
+path = Path("zensical.toml")
+text = path.read_text(encoding="utf-8")
+values = {
+    "site_name": os.environ["AMWA_ID"],
+    "site_description": f"AMWA {os.environ['AMWA_ID']}: {os.environ['DOC_TITLE']}",
+    "repo_url": f"https://github.com/{os.environ['ORG']}/{os.environ['NEW_REPO_NAME']}",
+    "repo_name": f"{os.environ['ORG']}/{os.environ['NEW_REPO_NAME']}",
+    "site_url": f"https://specs.amwa.tv/{os.environ['NEW_REPO_NAME']}/",
+}
+for key, value in values.items():
+    text, count = re.subn(
+        rf"(?m)^{re.escape(key)}\s*=.*$",
+        f"{key} = {json.dumps(value)}",
+        text,
+        count=1,
+    )
+    if count != 1:
+        raise SystemExit(f"could not patch {key} in zensical.toml")
+path.write_text(text, encoding="utf-8")
+PY
 
     # docs/Overview.md: replace only the first H1.
     if [[ -f docs/Overview.md ]]; then
@@ -184,9 +222,23 @@ p.write_text("".join(lines))
 PY
     fi
 
-    # docs.yml: update the SITE_NAME env value.
+    # docs.yml: update both the current reusable-workflow inputs and the old
+    # SITE_NAME form used by historical template revisions.
     if [[ -f .github/workflows/docs.yml ]]; then
-        sed -i -E "s#(SITE_NAME:\\s*)in-template#\\1${NEW_REPO_NAME}#" .github/workflows/docs.yml
+        sed -i -E \
+            -e "s#(site-name:[[:space:]]*)in-template#\\1${NEW_REPO_NAME}#" \
+            -e "s#(public-docs-root:[[:space:]]*https://specs.amwa.tv/new/)in-template#\\1${NEW_REPO_NAME}#" \
+            -e "s#(SITE_NAME:[[:space:]]*)in-template#\\1${NEW_REPO_NAME}#" \
+            .github/workflows/docs.yml
+    fi
+
+    # Keep the legacy Jekyll metadata consistent for consumers that still
+    # inspect it, even though the published site uses Zensical.
+    if [[ -f .render/_config.yml ]]; then
+        sed -i -E \
+            -e "s#^amwa_id:[[:space:]]*.*#amwa_id: ${AMWA_ID}#" \
+            -e "s#^baseurl:[[:space:]]*.*#baseurl: /${NEW_REPO_NAME}#" \
+            .render/_config.yml
     fi
 }
 
@@ -201,17 +253,19 @@ make_tempdir() {
 }
 
 wait_for_repo_ready() {
-    # After POST /generate the repo returns 202-ish for a moment while
-    # GitHub materialises the initial commit. Poll until we can see a
-    # default branch.
-    local repo="$1" i
-    for i in $(seq 1 30); do
-        if gh api "repos/${repo}" --jq '.default_branch' 2>/dev/null | grep -q .; then
+    # After POST /generate the repository metadata can appear before GitHub
+    # has materialised the template commit. Do not treat default_branch alone
+    # as readiness: cloning during that window can produce an empty checkout.
+    local repo="$1" branch
+    for _ in $(seq 1 60); do
+        branch=$(gh api "repos/${repo}" --jq '.default_branch // empty' 2>/dev/null || true)
+        if [[ -n "${branch}" ]] && gh api --method GET "repos/${repo}/contents/README.md" \
+            -f "ref=${branch}" --jq '.sha' >/dev/null 2>&1; then
             return 0
         fi
         sleep 2
     done
-    echo "Timed out waiting for ${repo} to become ready" >&2
+    echo "Timed out waiting for ${repo} template contents to become ready" >&2
     return 1
 }
 
@@ -327,6 +381,10 @@ for proposal in "${proposals[@]}"; do
     (
         cd "${workdir}"
         git clone --depth=1 "https://x-access-token:${GH_TOKEN}@github.com/${full_repo}.git" .
+        if [[ ! -s README.md || ! -s zensical.toml ]]; then
+            echo "error: ${full_repo} was cloned without the template files" >&2
+            exit 1
+        fi
         git config user.name  'amwa-in-index-bot[bot]'
         git config user.email 'amwa-in-index-bot[bot]@users.noreply.github.com'
 
