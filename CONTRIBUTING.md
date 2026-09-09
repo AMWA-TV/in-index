@@ -63,9 +63,9 @@ mint workflow clones the new repo and patches:
 
 - `README.md` — title line and Lint/Render badge URLs.
 - `spec.yml` — `amwa_id`, `url`, `name`, `repo_name`, `repo_url`.
-- `zensical.toml` — `site_name`, `site_description`.
+- `zensical.toml` — site name, description, repository identity, and site URL.
 - `docs/Overview.md` — H1 title line.
-- `.github/workflows/docs.yml` — `SITE_NAME` env value.
+- The inherited `.github/workflows/docs.yml` is left unchanged; the shared workflow derives the new repository name and staging URL from `github.repository`.
 
 It also copies `SSH_USER`, `SSH_HOST`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`
 from this repo's secrets into the new repo, so the Documentation workflow

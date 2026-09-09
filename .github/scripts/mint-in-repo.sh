@@ -222,15 +222,6 @@ p.write_text("".join(lines))
 PY
     fi
 
-    # docs.yml: update both the current reusable-workflow inputs and the old
-    # SITE_NAME form used by historical template revisions.
-    if [[ -f .github/workflows/docs.yml ]]; then
-        sed -i -E \
-            -e "s#(site-name:[[:space:]]*)in-template#\\1${NEW_REPO_NAME}#" \
-            -e "s#(public-docs-root:[[:space:]]*https://specs.amwa.tv/new/)in-template#\\1${NEW_REPO_NAME}#" \
-            -e "s#(SITE_NAME:[[:space:]]*)in-template#\\1${NEW_REPO_NAME}#" \
-            .github/workflows/docs.yml
-    fi
 
     # Keep the legacy Jekyll metadata consistent for consumers that still
     # inspect it, even though the published site uses Zensical.
