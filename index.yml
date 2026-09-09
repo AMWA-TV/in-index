@@ -1,4 +1,4 @@
-last_assigned: 5
+last_assigned: 6
 documents:
 - number: 1
   repo: AMWA-TV/in-001
@@ -36,5 +36,13 @@ documents:
   status: active
   minted_at: '2026-09-09T17:15:26Z'
   minted_from_proposal: proposals/005-timing-principles-external-signal-ingress.yml
+  initial_maintainers:
+  - peterbrightwell
+- number: 6
+  repo: AMWA-TV/in-006
+  title: DMF Business User Stories
+  status: active
+  minted_at: '2026-09-09T17:47:25Z'
+  minted_from_proposal: proposals/006-dmf-business-user-stories.yml
   initial_maintainers:
   - peterbrightwell
