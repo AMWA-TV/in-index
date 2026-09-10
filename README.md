@@ -29,7 +29,7 @@ the full workflow.
 ## Issued Increments
 
 <!-- INDEX-START -->
-<!-- This table is regenerated from index.yml by .github/scripts/regenerate-readme.sh -->
+<!-- This table is regenerated from index.yml and published spec.json metadata by .github/scripts/regenerate-readme.sh -->
 
 | Number | Title | Repo | Status |
 |--------|-------|------|--------|

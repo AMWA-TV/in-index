@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 """Generate the Zensical/MkDocs source tree for the Increment index.
 
-Reads `index.yml` (the authoritative record of issued Increments) and
-writes a single landing page into `build/docs/index.md`. Kept intentionally
-minimal — one page, one table — to match the current information density
-of the index. When we want per-Increment pages, tags, or filtering, we can
-grow this along the lines of ../nmos/.docs/build_index.py.
+Reads `index.yml` (the authoritative record of issued Increments), uses
+published repository metadata for each status, and writes a single landing
+page into `build/docs/index.md`. Kept intentionally minimal — one page, one
+table — to match the current information density of the index. When we want
+per-Increment pages, tags, or filtering, we can grow this along the lines of
+../nmos/.docs/build_index.py.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
+
 import yaml
+
+from status import metadata_for_repo
 
 ROOT = Path(__file__).resolve().parent.parent
 INDEX_YML = ROOT / "index.yml"
@@ -57,11 +61,24 @@ def render_index(data: dict) -> str:
             padded = f"IN-{n:03d}"
             repo = d.get("repo", "")
             slug = repo.split("/", 1)[-1] if repo else f"in-{n:03d}"
-            title = str(d.get("title", "")).replace("|", "\\|")
-            repo_md = f"[`{repo}`](https://github.com/{repo})" if repo else ""
-            # Site URL uses the staging path while zensical rollout is underway.
-            site_md = f"[specs.amwa.tv/new/{slug}](https://specs.amwa.tv/new/{slug}/)"
-            status = str(d.get("status", ""))
+            metadata = metadata_for_repo(repo) or {}
+            title = str(metadata.get("name", d.get("title", ""))).replace(
+                "|", "\\|"
+            )
+            repo_url = str(metadata.get("repo_url", ""))
+            repo_label = repo_url.removeprefix("https://github.com/").rstrip("/")
+            if not repo_url:
+                repo_url = f"https://github.com/{repo}" if repo else ""
+                repo_label = repo
+            repo_md = f"[`{repo_label}`]({repo_url})" if repo_url else ""
+            site_url = str(metadata.get("url", ""))
+            if not site_url:
+                # Site URL uses the staging path while zensical rollout is
+                # underway and metadata is unavailable.
+                site_url = f"https://specs.amwa.tv/new/{slug}/"
+            site_label = site_url.removeprefix("https://").rstrip("/")
+            site_md = f"[{site_label}]({site_url})"
+            status = str(metadata.get("status", d.get("status", "")))
             lines.append(
                 f"| {padded} | {title} | {repo_md} | {site_md} | {status} |"
             )

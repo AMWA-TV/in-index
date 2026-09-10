@@ -100,7 +100,7 @@ data.setdefault("documents", []).append({
     "number": int(number),
     "repo": repo,
     "title": title,
-    "status": "active",
+    "status": "Work In Progress",
     "minted_at": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
     "minted_from_proposal": proposal_file,
     "initial_maintainers": maintainers,

@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 #
-# Rewrite the "Issued increments" table in README.md from index.yml.
+# Rewrite the "Issued increments" table in README.md from index.yml and the
+# published spec.json metadata for each repository.
 # Idempotent: no-ops if the table already matches.
 
 set -euo pipefail
 
 table=$(python - <<'PY'
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(".docs").resolve()))
+
 import yaml
+from status import metadata_for_repo
+
 data = yaml.safe_load(open("index.yml")) or {}
 docs = sorted(data.get("documents") or [], key=lambda d: d["number"])
 lines = [
@@ -15,10 +22,16 @@ lines = [
 ]
 for d in docs:
     n = f"IN-{int(d['number']):03d}"
-    title = d.get("title", "").replace("|", "\\|")
     repo = d.get("repo", "")
-    repo_md = f"[`{repo}`](https://github.com/{repo})" if repo else ""
-    status = d.get("status", "")
+    metadata = metadata_for_repo(repo) or {}
+    title = str(metadata.get("name", d.get("title", ""))).replace("|", "\\|")
+    repo_url = str(metadata.get("repo_url", ""))
+    repo_label = repo_url.removeprefix("https://github.com/").rstrip("/")
+    if not repo_url:
+        repo_url = f"https://github.com/{repo}" if repo else ""
+        repo_label = repo
+    repo_md = f"[`{repo_label}`]({repo_url})" if repo_url else ""
+    status = str(metadata.get("status", d.get("status", "")))
     lines.append(f"| {n} | {title} | {repo_md} | {status} |")
 print("\n".join(lines))
 PY
@@ -33,7 +46,7 @@ pattern = re.compile(
     r"(<!-- INDEX-START -->\n).*?(\n<!-- INDEX-END -->)",
     re.DOTALL,
 )
-comment = "<!-- This table is regenerated from index.yml by .github/scripts/regenerate-readme.sh -->\n\n"
+comment = "<!-- This table is regenerated from index.yml and published spec.json metadata by .github/scripts/regenerate-readme.sh -->\n\n"
 replacement = r"\g<1>" + comment + table + "\n" + r"\g<2>"
 new = pattern.sub(replacement, text)
 if new != text:
