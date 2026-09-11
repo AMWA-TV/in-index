@@ -55,8 +55,12 @@ def render_index(data: dict) -> str:
         lines.append("_No Increments have been issued yet._")
     else:
         lines += [
-            "| Number | Title | Repository | Site | Status |",
-            "|--------|-------|------------|------|--------|",
+            '<table class="in-index-table">',
+            "<thead>",
+            "<tr><th>Number</th><th>Title</th><th>Repository</th>"
+            "<th>Site</th><th>Status</th></tr>",
+            "</thead>",
+            "<tbody>",
         ]
         for d in docs:
             n = int(d["number"])
@@ -64,22 +68,28 @@ def render_index(data: dict) -> str:
             repo = d.get("repo", "")
             slug = repo.split("/", 1)[-1] if repo else f"in-{n:03d}"
             metadata = metadata_for_repo(repo) or {}
-            title = str(metadata.get("name", d.get("title", ""))).replace(
-                "|", "\\|"
-            )
+            title = str(metadata.get("name", d.get("title", "")))
             repo_url = str(metadata.get("repo_url", ""))
             repo_label = repo_url.removeprefix("https://github.com/").rstrip("/")
             if not repo_url:
                 repo_url = f"https://github.com/{repo}" if repo else ""
                 repo_label = repo
-            repo_md = f"[`{repo_label}`]({repo_url})" if repo_url else ""
+            repo_html = (
+                f'<a href="{escape(repo_url, quote=True)}">'
+                f"<code>{escape(repo_label)}</code></a>"
+                if repo_url
+                else ""
+            )
             site_url = str(metadata.get("url", ""))
             if not site_url:
                 # Site URL uses the staging path while zensical rollout is
                 # underway and metadata is unavailable.
                 site_url = f"https://specs.amwa.tv/new/{slug}/"
             site_label = site_url.removeprefix("https://").rstrip("/")
-            site_md = f"[{site_label}]({site_url})"
+            site_html = (
+                f'<a href="{escape(site_url, quote=True)}">'
+                f"{escape(site_label)}</a>"
+            )
             status = str(metadata.get("status", d.get("status", "")))
             tooltip = tooltip_text(metadata)
             tooltip_markup = tooltip_html(metadata)
@@ -96,8 +106,15 @@ def render_index(data: dict) -> str:
             else:
                 number_label = padded
             lines.append(
-                f"| {number_label} | {title} | {repo_md} | {site_md} | {status} |"
+                "<tr>"
+                f"<td>{number_label}</td>"
+                f"<td>{escape(title)}</td>"
+                f"<td>{repo_html}</td>"
+                f"<td>{site_html}</td>"
+                f"<td>{escape(status)}</td>"
+                "</tr>"
             )
+        lines += ["</tbody>", "</table>"]
 
     # lines += [
     #     "",

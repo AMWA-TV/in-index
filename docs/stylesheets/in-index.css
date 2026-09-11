@@ -60,6 +60,40 @@
   font-weight: 400;
 }
 
-.md-typeset__table:has(.in-index-entry) {
-  overflow: visible;
+.md-typeset table.in-index-table {
+  display: table !important;
+  max-width: none !important;
+  overflow: visible !important;
+  table-layout: fixed;
+  width: 100% !important;
+}
+
+.md-typeset table.in-index-table th,
+.md-typeset table.in-index-table td {
+  overflow-wrap: anywhere;
+}
+
+.md-typeset table.in-index-table th:nth-child(1),
+.md-typeset table.in-index-table td:nth-child(1) {
+  width: 11%;
+}
+
+.md-typeset table.in-index-table th:nth-child(2),
+.md-typeset table.in-index-table td:nth-child(2) {
+  width: 32%;
+}
+
+.md-typeset table.in-index-table th:nth-child(3),
+.md-typeset table.in-index-table td:nth-child(3) {
+  width: 21%;
+}
+
+.md-typeset table.in-index-table th:nth-child(4),
+.md-typeset table.in-index-table td:nth-child(4) {
+  width: 21%;
+}
+
+.md-typeset table.in-index-table th:nth-child(5),
+.md-typeset table.in-index-table td:nth-child(5) {
+  width: 15%;
 }
