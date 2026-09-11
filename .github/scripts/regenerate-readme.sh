@@ -8,11 +8,12 @@ set -euo pipefail
 
 table=$(python - <<'PY'
 import sys
+from html import escape
 from pathlib import Path
 sys.path.insert(0, str(Path(".docs").resolve()))
 
 import yaml
-from status import metadata_for_repo
+from status import metadata_for_repo, tooltip_text
 
 data = yaml.safe_load(open("index.yml")) or {}
 docs = sorted(data.get("documents") or [], key=lambda d: d["number"])
@@ -32,13 +33,26 @@ for d in docs:
         repo_label = repo
     repo_md = f"[`{repo_label}`]({repo_url})" if repo_url else ""
     status = str(metadata.get("status", d.get("status", "")))
-    lines.append(f"| {n} | {title} | {repo_md} | {status} |")
+    tooltip = tooltip_text(metadata)
+    if tooltip:
+        tooltip_attr = escape(
+            tooltip.replace("\n", " | "), quote=True
+        ).replace("|", "&#124;")
+        number_label = (
+            f'<abbr class="in-index-entry" title="{tooltip_attr}" '
+                        f'data-tooltip="{tooltip_attr}" tabindex="0" '
+                        f'aria-label="{tooltip_attr}">{n}</abbr>'
+        )
+    else:
+        number_label = n
+    lines.append(f"| {number_label} | {title} | {repo_md} | {status} |")
 print("\n".join(lines))
 PY
 )
 
 python - "$table" <<'PY'
 import re, sys, pathlib
+
 table = sys.argv[1]
 p = pathlib.Path("README.md")
 text = p.read_text()

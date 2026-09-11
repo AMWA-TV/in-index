@@ -9,7 +9,7 @@ docs_dir = "build/docs"
 site_dir = "site"
 plugins = ["search"]
 nav = [{ Home = "index.md" }]
-extra_css = ["stylesheets/amwa-branding.css"]
+extra_css = ["stylesheets/amwa-branding.css", "stylesheets/in-index.css"]
 extra_javascript = ["javascripts/amwa-branding.js"]
 [project.theme]
 features = [

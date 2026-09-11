@@ -1,0 +1,65 @@
+.in-index-entry {
+  cursor: help;
+  display: inline-block;
+  position: relative;
+  text-decoration: underline dotted;
+}
+
+.in-index-tooltip {
+  background: var(--md-default-bg-color);
+  border: 0.05rem solid var(--md-default-fg-color--light);
+  border-radius: 0.3rem;
+  box-shadow: var(--md-shadow-z2);
+  color: var(--md-default-fg-color);
+
+  font-size: 0.75rem;
+  display: block;
+  font-weight: 400;
+  left: 0;
+  line-height: 1.45;
+  max-width: min(34rem, calc(100vw - 2rem));
+  opacity: 0;
+  padding: 0.75rem 1rem;
+  pointer-events: none;
+  position: absolute;
+  text-align: left;
+  top: calc(100% + 0.5rem);
+  transform: translateY(-0.25rem);
+  transition: opacity 120ms ease, transform 120ms ease, visibility 120ms ease;
+  visibility: hidden;
+  white-space: normal;
+  width: max-content;
+  overflow-wrap: anywhere;
+  z-index: 100;
+}
+
+.in-index-entry:hover .in-index-tooltip,
+.in-index-entry:focus .in-index-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.in-index-tooltip-title,
+.in-index-tooltip-heading,
+.in-index-tooltip-item {
+  display: block;
+}
+
+.in-index-tooltip-title {
+  font-weight: 700;
+  margin-bottom: 0.45rem;
+}
+
+.in-index-tooltip-heading {
+  font-weight: 700;
+  margin-top: 0.45rem;
+}
+
+.in-index-tooltip-item {
+  font-weight: 400;
+}
+
+.md-typeset__table:has(.in-index-entry) {
+  overflow: visible;
+}

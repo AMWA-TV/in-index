@@ -11,11 +11,13 @@ per-Increment pages, tags, or filtering, we can grow this along the lines of
 
 from __future__ import annotations
 
+import shutil
+from html import escape
 from pathlib import Path
 
 import yaml
 
-from status import metadata_for_repo
+from status import metadata_for_repo, tooltip_html, tooltip_text
 
 ROOT = Path(__file__).resolve().parent.parent
 INDEX_YML = ROOT / "index.yml"
@@ -79,8 +81,22 @@ def render_index(data: dict) -> str:
             site_label = site_url.removeprefix("https://").rstrip("/")
             site_md = f"[{site_label}]({site_url})"
             status = str(metadata.get("status", d.get("status", "")))
+            tooltip = tooltip_text(metadata)
+            tooltip_markup = tooltip_html(metadata)
+            if tooltip and tooltip_markup:
+                tooltip_attr = escape(
+                    tooltip.replace("\n", " | "), quote=True
+                ).replace("|", "&#124;")
+                number_label = (
+                    f'<abbr class="in-index-entry" tabindex="0" '
+                    f'aria-label="{tooltip_attr}">{padded}'
+                    f'<span class="in-index-tooltip" role="tooltip">'
+                    f"{tooltip_markup}</span></abbr>"
+                )
+            else:
+                number_label = padded
             lines.append(
-                f"| {padded} | {title} | {repo_md} | {site_md} | {status} |"
+                f"| {number_label} | {title} | {repo_md} | {site_md} | {status} |"
             )
 
     # lines += [
@@ -98,6 +114,13 @@ def main() -> None:
     data = load_index()
     DOCS_OUT.mkdir(parents=True, exist_ok=True)
     (DOCS_OUT / "index.md").write_text(render_index(data), encoding="utf-8")
+
+    stylesheet = ROOT / "docs" / "stylesheets" / "in-index.css"
+    if stylesheet.is_file():
+        destination = DOCS_OUT / "stylesheets" / stylesheet.name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(stylesheet, destination)
+
     print(f"Wrote {DOCS_OUT / 'index.md'}")
 
 
