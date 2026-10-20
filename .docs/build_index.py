@@ -47,6 +47,8 @@ def render_index(data: dict) -> str:
         "see its [CONTRIBUTING.md](https://github.com/AMWA-TV/in-index/blob/main/CONTRIBUTING.md)",
         "for the process.",
         "",
+        "[Search all AMWA documentation](https://specs.amwa.tv/nmos/global-search/) across NMOS specifications and Increments.",
+        "",
         "## Issued Increments",
         "",
     ]

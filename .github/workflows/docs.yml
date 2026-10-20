@@ -109,9 +109,8 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
-          # Staging path so we don't collide with anything at the top of
-          # specs.amwa.tv. Drop the /new/ prefix when going live.
-          REMOTE_PATH: "/var/www/specs.amwa.tv/new/in-index"
+          # The canonical AMWA Increment index lives directly under /in-index.
+          REMOTE_PATH: "/var/www/specs.amwa.tv/in-index"
         run: |
           rsync -az --delete \
             -e 'ssh -o StrictHostKeyChecking=yes' \
