@@ -151,7 +151,9 @@ validate_upload_secrets() {
 # ---------------------------------------------------------------------------
 # In-place customisation of a freshly-cloned in-NNN checkout.
 #
-# Applied to `.` in the cwd. Values are read from env for simplicity.
+# Applied to `.` in the cwd. The shared docs workflow generates its Zensical
+# config from repository metadata, so this only patches source metadata files.
+# Values are read from env for simplicity.
 #   NEW_REPO_NAME       e.g. in-042
 #   AMWA_ID             e.g. IN-042
 #   DOC_TITLE           e.g. "API Requirements ..."
@@ -193,33 +195,6 @@ data["repo_url"] = f"https://github.com/{os.environ['ORG']}/{os.environ['NEW_REP
 path.write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True), encoding="utf-8")
 PY
 
-    # zensical.toml
-    python - <<'PY'
-import json
-import os
-import re
-from pathlib import Path
-
-path = Path("zensical.toml")
-text = path.read_text(encoding="utf-8")
-values = {
-    "site_name": os.environ["AMWA_ID"],
-    "site_description": f"AMWA {os.environ['AMWA_ID']}: {os.environ['DOC_TITLE']}",
-    "repo_url": f"https://github.com/{os.environ['ORG']}/{os.environ['NEW_REPO_NAME']}",
-    "repo_name": f"{os.environ['ORG']}/{os.environ['NEW_REPO_NAME']}",
-    "site_url": f"https://specs.amwa.tv/{os.environ['NEW_REPO_NAME']}/",
-}
-for key, value in values.items():
-    text, count = re.subn(
-        rf"(?m)^{re.escape(key)}\s*=.*$",
-        f"{key} = {json.dumps(value)}",
-        text,
-        count=1,
-    )
-    if count != 1:
-        raise SystemExit(f"could not patch {key} in zensical.toml")
-path.write_text(text, encoding="utf-8")
-PY
 
     # docs/Overview.md: replace only the first H1.
     if [[ -f docs/Overview.md ]]; then
@@ -264,8 +239,11 @@ wait_for_repo_ready() {
     local repo="$1" branch
     for _ in $(seq 1 60); do
         branch=$(gh api "repos/${repo}" --jq '.default_branch // empty' 2>/dev/null || true)
-        if [[ -n "${branch}" ]] && gh api --method GET "repos/${repo}/contents/README.md" \
-            -f "ref=${branch}" --jq '.sha' >/dev/null 2>&1; then
+        if [[ -n "${branch}" ]] \
+            && gh api --method GET "repos/${repo}/contents/README.md" \
+                -f "ref=${branch}" --jq '.sha' >/dev/null 2>&1 \
+            && gh api --method GET "repos/${repo}/contents/spec.yml" \
+                -f "ref=${branch}" --jq '.sha' >/dev/null 2>&1; then
             return 0
         fi
         sleep 2
@@ -389,8 +367,8 @@ for proposal in "${proposals[@]}"; do
     (
         cd "${workdir}"
         git clone --depth=1 "https://x-access-token:${GH_TOKEN}@github.com/${full_repo}.git" .
-        if [[ ! -s README.md || ! -s zensical.toml ]]; then
-            echo "error: ${full_repo} was cloned without the template files" >&2
+        if [[ ! -s README.md || ! -s spec.yml ]]; then
+            echo "error: ${full_repo} is missing required template files (README.md and/or spec.yml)" >&2
             exit 1
         fi
         git config user.name  'amwa-in-index-bot[bot]'
