@@ -1,4 +1,4 @@
-last_assigned: 6
+last_assigned: 7
 documents:
 - number: 1
   repo: AMWA-TV/in-001
@@ -46,3 +46,11 @@ documents:
   minted_from_proposal: proposals/006-dmf-business-user-stories.yml
   initial_maintainers:
   - peterbrightwell
+- number: 7
+  repo: AMWA-TV/in-007
+  title: 'DMF Security: Assets & Requirements'
+  status: Work In Progress
+  minted_at: '2026-11-23T16:30:20Z'
+  minted_from_proposal: proposals/assets-requirements.yml
+  initial_maintainers:
+  - wvermost
